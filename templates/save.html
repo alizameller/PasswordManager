@@ -1,0 +1,57 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Password Manager</title>
+</head>
+<body>
+    <h1>Password Manager</h1>
+
+    <form id="passwordForm">
+        <label for="website">Website:</label>
+        <input type="text" id="website" name="website"><br><br>
+        
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username"><br><br>
+        
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password"><br><br>
+        
+        <button type="submit">Save Password</button>
+    </form>
+
+    <div id="passwordDisplay"></div>
+
+    <script>
+        document.getElementById('passwordForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const website = document.getElementById('website').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            fetch('/save_password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ website, username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const website = 'example.com'; // Replace with your desired website
+            fetch(`/get_password/${website}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('passwordDisplay').innerText = `Username: ${data.username}, Password: ${data.password}`;
+            });
+        });
+    </script>
+</body>
+</html>
