@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, g, session, redirect, url_for
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
+import js2py
 
 app = Flask(__name__)
 app.secret_key = 'david_stekol'
@@ -105,9 +106,22 @@ def save_password():
     db.close()
     return jsonify({'message': 'Password saved successfully.'})
 
+@app.route('/get_password')
+def get_pass():
+    return render_template('get_password.html')
+
+@app.route('/load_get_password', methods=['POST'])
+def load_get_password():
+    data = request.get_json()
+    website = data.get('website')
+    if website: 
+        return redirect(url_for('get_password', website=website))
+    return render_template('get_password.html')
 
 @app.route('/get_password/<website>', methods=['GET'])
 def get_password(website):
+    if not 'username' in session:
+        return jsonify({'message': 'Please Log In To View Password'}), 403
     db = get_db()
     current_user = session['username']
     cursor = db.execute(f'SELECT password FROM password_table WHERE website = \'{website}\' AND username = \'{current_user}\'')
@@ -115,7 +129,7 @@ def get_password(website):
     db.close()
     if not password:
         return jsonify({'message': 'No password found for this website'}), 403
-    return render_template('display.html', info=password)
+    return render_template('display.html', info=password, website = website)
 
 if __name__ == '__main__':
     app.run(debug=True)
