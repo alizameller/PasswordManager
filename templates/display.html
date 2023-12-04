@@ -10,13 +10,11 @@
     <h1>User List</h1>
     <table border="1">
         <tr>
-            <th>Username</th>
             <th>Password</th>
         </tr>
         {% for item in info %}
             <tr>
                 <td>{{ item[0] }}</td>
-                <td>{{ item[1] }}</td>
             </tr>
         {% endfor %}
     </table>

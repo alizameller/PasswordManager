@@ -52,8 +52,6 @@ def login_():
     db = get_db()
     cursor = db.execute(f'SELECT password FROM login_table WHERE username = \'{username}\'')
     password = cursor.fetchall()
-    if password:
-        print(password[0][0])
     # Store the password securely (in a real scenario, this would involve encryption)
     if not password:
         return jsonify({'message': 'User not found'}), 401
@@ -96,14 +94,15 @@ def save():
 @app.route('/save_password', methods=['POST'])
 def save_password():
     data = request.get_json()
-    username = data.get('username')
+    website_username = data.get('username')
     password = data.get('password')
     website = data.get('website')
     current_user = session['username']
 
     db = get_db()
-    db.execute('INSERT INTO password_table (username,website_username,website, password) VALUES (?,?,?,?)', (current_user,username,website,password))
+    db.execute('INSERT INTO password_table (username,website_username,website, password) VALUES (?,?,?,?)', (current_user,website_username,website,password))
     db.commit()
+    db.close()
     return jsonify({'message': 'Password saved successfully.'})
 
 
@@ -111,11 +110,13 @@ def save_password():
 def get_password(website):
     db = get_db()
     current_user = session['username']
-    print(current_user)
-    cursor = db.execute(f'SELECT website_username, password FROM password_table WHERE website = \'{website}\' AND username = \'{current_user}\'')
+    cursor = db.execute(f'SELECT password FROM password_table WHERE website = \'{website}\' AND username = \'{current_user}\'')
+    print(cursor.rowcount)
     password = cursor.fetchall()
     db.close()
+    if not password:
+        return jsonify({'message': 'No password found for this website'}), 400
     return render_template('display.html', info=password)
 
 if __name__ == '__main__':
-    app.run( debug=True)
+    app.run(debug=True)
