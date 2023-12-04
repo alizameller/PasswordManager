@@ -100,7 +100,7 @@ def save_password():
     current_user = session['username']
 
     db = get_db()
-    db.execute('INSERT INTO password_table (username,website_username,website, password) VALUES (?,?,?,?)', (current_user,website_username,website,password))
+    db.execute(f'INSERT INTO password_table (username,website, password) VALUES (?,?,?) ON CONFLICT(username,website) DO UPDATE SET password=?;', (current_user,website,password,password))
     db.commit()
     db.close()
     return jsonify({'message': 'Password saved successfully.'})
@@ -111,11 +111,10 @@ def get_password(website):
     db = get_db()
     current_user = session['username']
     cursor = db.execute(f'SELECT password FROM password_table WHERE website = \'{website}\' AND username = \'{current_user}\'')
-    print(cursor.rowcount)
     password = cursor.fetchall()
     db.close()
     if not password:
-        return jsonify({'message': 'No password found for this website'}), 400
+        return jsonify({'message': 'No password found for this website'}), 403
     return render_template('display.html', info=password)
 
 if __name__ == '__main__':
