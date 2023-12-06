@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify, g, session, redirect, url_for
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
-import js2py
 
 app = Flask(__name__)
 app.secret_key = 'david_stekol'
@@ -124,7 +123,13 @@ def get_password(website):
         return jsonify({'message': 'Please Log In To View Password'}), 403
     db = get_db()
     current_user = session['username']
-    cursor = db.execute(f'SELECT password FROM password_table WHERE website = \'{website}\' AND username = \'{current_user}\'')
+
+    # exploitable by going to http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%20sql%20from%20sqlite_master;-- which gives all schema for database
+    # Then go to http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%website%20from%20password_table;-- for all websites with passwords stored
+    # Then go to http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%20password%20from%20password_table;-- for the corresponding passwords
+    
+    #Fixed by going to prepared statements instead
+    cursor = db.execute(f"SELECT password FROM password_table WHERE website = ? AND username = ?;", (website, current_user))
     password = cursor.fetchall()
     db.close()
     if not password:
