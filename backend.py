@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'david_stekol'
+app.config['SESSION_COOKIE_SECURE'] = True
 
 users = {
     'user1': {
