@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify, g, session, redirect, url_for
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
-import js2py
 
 app = Flask(__name__)
 app.secret_key = 'david_stekol'
@@ -132,4 +131,4 @@ def get_password(website):
     return render_template('display.html', info=password, website = website)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='192.168.1.114')
