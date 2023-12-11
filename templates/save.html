@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Password Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <h1>Password Manager</h1>
@@ -20,6 +21,11 @@
         
         <button type="submit">Save Password</button>
     </form>
+    <nav>
+        <ul>
+            <li><a href="/"><i class="fas fa-sign-out-alt"></i>Home</a></li>
+        </ul>
+    </nav>
 
     <script>
         document.getElementById('passwordForm').addEventListener('submit', function(event) {
