@@ -55,6 +55,7 @@ def login_():
     password = cursor.fetchall()
     # Store the password securely (in a real scenario, this would involve encryption)
     if not password:
+        
         return jsonify({'message': 'User not found'}), 401
 
     if not check_password_hash(password[0][0], masterkey):
@@ -86,7 +87,8 @@ def register_():
 @app.route('/logout')
 def logout():
     session.pop('username', None)
-    return jsonify({'message': 'Logged out'})
+    jsonify({'message': 'Logged out'})
+    return render_template('logout.html')
 
 @app.route('/save')
 def save():
@@ -121,15 +123,15 @@ def load_get_password():
 @app.route('/get_password/<website>', methods=['GET'])
 def get_password(website):
     if not 'username' in session:
-        return jsonify({'message': 'Please Log In To View Password'}), 403
+        return render_template('error.html', message = 'Please Log In To View Password', error_code = 403)
     db = get_db()
     current_user = session['username']
     cursor = db.execute(f'SELECT password FROM password_table WHERE website = \'{website}\' AND username = \'{current_user}\'')
     password = cursor.fetchall()
     db.close()
     if not password:
-        return jsonify({'message': 'No password found for this website'}), 403
+        return render_template('error.html', message = 'No password found for this website', error_code = 403)
     return render_template('display.html', info=password, website = website)
 
 if __name__ == '__main__':
-    app.run(debug=True, host = '10.45.17.102')
+    app.run(debug=True, host = '192.168.1.114')
