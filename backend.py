@@ -62,23 +62,12 @@ def login_():
 
 
 
+
+
+
 @app.route('/verify')
 def verify():
-    db = get_db()
-    username = session['username']
-    cursor = db.execute(f'SELECT secret FROM login_table WHERE username = \'{username}\'')
-    secret_key = cursor.fetchall()
-    print(secret_key)
-    db.close()
-    totp = pyotp.TOTP(secret_key[0][0])
-    totp_url = totp.provisioning_uri(name=username, issuer_name='PasswordManager')
-    qr_code = qrcode.make(totp_url)
-    buffer = BytesIO()
-    qr_code.save(buffer)
-    buffer.seek(0)
-    encoded_img = b64encode(buffer.read()).decode()
-    totp_url = f'data:image/png;base64,{encoded_img}'
-    return render_template('verify_otp.html',totp_url=totp_url)
+    return render_template('verify_otp.html')
 
 @app.route('/verify_otp', methods=['POST'])
 def verify_otp():
@@ -116,6 +105,25 @@ def register_():
     db.close()
 
     return jsonify({'message': 'Registration successful'})
+
+
+@app.route('/setup')
+def setup():
+    db = get_db()
+    cursor = db.execute(f'SELECT username,secret FROM login_table ORDER BY rowid DESC LIMIT 1')
+    data = cursor.fetchall()
+    print(data)
+    username = data[0][0]
+    totp = pyotp.TOTP(data[0][1])
+    totp_url = totp.provisioning_uri(name=username, issuer_name='PasswordManager')
+    qr_code = qrcode.make(totp_url)
+    buffer = BytesIO()
+    qr_code.save(buffer)
+    buffer.seek(0)
+    encoded_img = b64encode(buffer.read()).decode()
+    totp_url = f'data:image/png;base64,{encoded_img}'
+    return render_template('setup_otp.html',totp_url=totp_url)
+
 
 @app.route('/logout')
 def logout():

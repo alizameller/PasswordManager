@@ -8,8 +8,6 @@
 </head>
 <body>
     <h1>Verify OTP</h1>
-    <p>Scan the following QR code with your authenticator app:</p>
-    <img src="{{ totp_url }}" alt="QR Code">
     <form method="post" action="/verify_otp">
         <label for="otp">Enter the code from your authenticator app:</label>
         <input type="text" id="otp" name="otp" required>
