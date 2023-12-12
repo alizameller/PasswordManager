@@ -112,7 +112,6 @@ def setup():
     db = get_db()
     cursor = db.execute(f'SELECT username,secret FROM login_table ORDER BY rowid DESC LIMIT 1')
     data = cursor.fetchall()
-    print(data)
     username = data[0][0]
     totp = pyotp.TOTP(data[0][1])
     totp_url = totp.provisioning_uri(name=username, issuer_name='PasswordManager')
