@@ -4,15 +4,17 @@ import pyotp
 import qrcode
 from io import BytesIO
 from werkzeug.security import generate_password_hash, check_password_hash
+from base64 import b64encode
 
 app = Flask(__name__, static_url_path='/static')
-from base64 import b64encode
-app = Flask(__name__)
+
 app.secret_key = 'david_stekol'
-
-
+# these flags protect cookies from being visible by a browser
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
 
 DATABASE = "password_manager.db"
+hostname = '10.45.26.56'
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -164,8 +166,6 @@ def get_password(website):
     db = get_db()
     current_user = session['username']
 
- 
-    
     #Fixed by going to prepared statements instead
     cursor = db.execute("SELECT password FROM password_table WHERE website = ? AND username = ?;", (website, current_user))
     password = cursor.fetchall()
@@ -177,4 +177,4 @@ def get_password(website):
 if __name__ == '__main__':
     # make sure you pip install pyopenssl -- for https purposes
     # ssl_context flag ensures https communication
-    app.run(debug=True, host='10.45.26.56', ssl_context='adhoc')
+    app.run(debug=True, host=hostname, ssl_context='adhoc')
