@@ -1,5 +1,5 @@
 # PasswordManager
-Before running this application, set the host paramter in the ```app.run()``` function to your host ip address. 
+Before running this application, set the hostname variable to your host ip address. 
 
 #### Run the app with:
     python3 backend.py
