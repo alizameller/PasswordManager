@@ -4,7 +4,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'david_stekol'
+# these flags protect cookies from being visible by a browser
 app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True 
 
 users = {
     'user1': {
@@ -133,4 +135,5 @@ def get_password(website):
 
 if __name__ == '__main__':
     # make sure you pip install pyopenssl -- for https purposes
+    # ssl_context flag ensures https communication
     app.run(debug=True, host='192.168.1.114', ssl_context='adhoc')
