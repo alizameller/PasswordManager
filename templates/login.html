@@ -9,6 +9,7 @@
 <body>
     <h1>User Login</h1>
     <form id="loginForm">
+        
         <label for="username">Username:</label>
         <input type="text" id="username" name="username"><br><br>
         
@@ -35,9 +36,15 @@
                 },
                 body: JSON.stringify({ username, password })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.status == 200){
+                    return response.json()
+                }
+                alert("Error logging in: " + response.statusText)
+                throw new Error(response.status)
+            })
             .then(data => {
-                alert(data.message);
+                window.location.href = '/verify'
             });
         });
     </script>

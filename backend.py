@@ -1,26 +1,15 @@
 from flask import Flask, render_template, request, jsonify, g, session, redirect, url_for
 import sqlite3
+import pyotp
+import qrcode
+from io import BytesIO
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, static_url_path='/static')
+from base64 import b64encode
+app = Flask(__name__)
 app.secret_key = 'david_stekol'
-# these flags protect cookies from being visible by a browser
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_HTTPONLY'] = True 
 
-users = {
-    'user1': {
-        'password': generate_password_hash('password1'),
-        'passwords': {}
-    },
-    'user2': {
-        'password': generate_password_hash('password1'),
-        'passwords': {}
-    }
-}
-
-# Replace this with a secure method to store passwords
-passwords = {}
 
 
 DATABASE = "password_manager.db"
@@ -64,8 +53,42 @@ def login_():
         return jsonify({'message': 'Incorrect password'}), 401
 
     session['username'] = username
-    db.close()
+    # cursor = db.execute(f'SELECT secret FROM login_table WHERE username = \'{username}\'')
+    # secret_key = cursor.fetchall()
+    # db.close()
+    # totp = pyotp.TOTP(secret_key)
+    # totp_url = totp.provisioning_uri(name=username, issuer_name='PasswordManager')
+    # print(totp_url)
+    session['authenticated'] = False
+   
     return jsonify({'message': 'Login successful'})
+
+
+
+
+
+
+@app.route('/verify')
+def verify():
+    return render_template('verify_otp.html')
+
+@app.route('/verify_otp', methods=['POST'])
+def verify_otp():
+    print(session['username'])
+    if 'username' in session and not session.get('authenticated'):
+        username = session['username']
+        db = get_db()
+        if username:
+            cursor = db.execute(f'SELECT secret FROM login_table WHERE username = \'{username}\'')
+            secret_key = cursor.fetchall()
+            totp = pyotp.TOTP(secret_key[0][0])
+            
+            if totp.verify(request.form['otp']):
+                # Mark user as authenticated
+                session['authenticated'] = True
+                return jsonify({'message': 'Login successful with 2FA'})
+
+    return jsonify({'message': 'Invalid OTP or Authentication State'})
 
 @app.route('/register_', methods=['POST'])
 def register_():
@@ -79,16 +102,35 @@ def register_():
     if user:
         return jsonify({'message': 'Username already exists'}), 400
 
-
-    db.execute('INSERT INTO login_table (username, password) VALUES (?,?)', (username,generate_password_hash(password)))
+    secret_key = pyotp.random_base32()
+    db.execute('INSERT INTO login_table (username, password,secret) VALUES (?,?,?)', (username,generate_password_hash(password), secret_key))
     db.commit()
     db.close()
 
     return jsonify({'message': 'Registration successful'})
 
+
+@app.route('/setup')
+def setup():
+    db = get_db()
+    cursor = db.execute(f'SELECT username,secret FROM login_table ORDER BY rowid DESC LIMIT 1')
+    data = cursor.fetchall()
+    username = data[0][0]
+    totp = pyotp.TOTP(data[0][1])
+    totp_url = totp.provisioning_uri(name=username, issuer_name='PasswordManager')
+    qr_code = qrcode.make(totp_url)
+    buffer = BytesIO()
+    qr_code.save(buffer)
+    buffer.seek(0)
+    encoded_img = b64encode(buffer.read()).decode()
+    totp_url = f'data:image/png;base64,{encoded_img}'
+    return render_template('setup_otp.html',totp_url=totp_url)
+
+
 @app.route('/logout')
 def logout():
     session.pop('username', None)
+    session.pop('authenticated', None)
     jsonify({'message': 'Logged out'})
     return render_template('logout.html')
 
@@ -128,7 +170,13 @@ def get_password(website):
         return render_template('error.html', message = 'Please Log In To View Password', error_code = 403)
     db = get_db()
     current_user = session['username']
-    cursor = db.execute(f'SELECT password FROM password_table WHERE website = \'{website}\' AND username = \'{current_user}\'')
+
+    # exploitable by going to http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%20sql%20from%20sqlite_master;-- which gives all schema for database
+    # Then go to http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%website%20from%20password_table;-- for all websites with passwords stored
+    # Then go to http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%20password%20from%20password_table;-- for the corresponding passwords
+    
+    #Fixed by going to prepared statements instead
+    cursor = db.execute("SELECT password FROM password_table WHERE website = ? AND username = ?;", (website, current_user))
     password = cursor.fetchall()
     db.close()
     if not password:

@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS password_table (
 
 CREATE TABLE IF NOT EXISTS login_table (
     username TEXT PRIMARY KEY,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    secret INT NOT NULL
 );
