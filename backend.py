@@ -44,7 +44,6 @@ def login_():
     db = get_db()
     cursor = db.execute(f'SELECT password FROM login_table WHERE username = \'{username}\'')
     password = cursor.fetchall()
-    # Store the password securely (in a real scenario, this would involve encryption)
     if not password:
         
         return jsonify({'message': 'User not found'}), 401
@@ -53,12 +52,6 @@ def login_():
         return jsonify({'message': 'Incorrect password'}), 401
 
     session['username'] = username
-    # cursor = db.execute(f'SELECT secret FROM login_table WHERE username = \'{username}\'')
-    # secret_key = cursor.fetchall()
-    # db.close()
-    # totp = pyotp.TOTP(secret_key)
-    # totp_url = totp.provisioning_uri(name=username, issuer_name='PasswordManager')
-    # print(totp_url)
     session['authenticated'] = False
    
     return jsonify({'message': 'Login successful'})
@@ -171,9 +164,7 @@ def get_password(website):
     db = get_db()
     current_user = session['username']
 
-    # exploitable by going to http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%20sql%20from%20sqlite_master;-- which gives all schema for database
-    # Then go to http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%website%20from%20password_table;-- for all websites with passwords stored
-    # Then go to http://127.0.0.1:5000/get_password/google'%20UNION%20ALL%20SELECT%20password%20from%20password_table;-- for the corresponding passwords
+ 
     
     #Fixed by going to prepared statements instead
     cursor = db.execute("SELECT password FROM password_table WHERE website = ? AND username = ?;", (website, current_user))
@@ -186,4 +177,4 @@ def get_password(website):
 if __name__ == '__main__':
     # make sure you pip install pyopenssl -- for https purposes
     # ssl_context flag ensures https communication
-    app.run(debug=True, host='192.168.1.114', ssl_context='adhoc')
+    app.run(debug=True, host='10.45.26.56', ssl_context='adhoc')
