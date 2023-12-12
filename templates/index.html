@@ -3,15 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Password Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <h1>Password Manager</h1>
+    <header>
+        <h1>Password Manager</h1>
+    </header>
 
-    <ul>
-        <li><a href="/register">Register</a></li>
-        <li><a href="/login">Login</a></li>
-        <li><a href="/save">Save a Password</a></li>
-        <li><a href="/get_password">View Password</a></li>
-    </ul>
+    <div class="container">
+        <nav>
+            <ul>
+                <li><a href="/register"><i class="fas fa-user-plus"></i> Register</a></li>
+                <li><a href="/login"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                <li><a href="/save"><i class="fas fa-save"></i> Save a Password</a></li>
+                <li><a href="/get_password"><i class="fas fa-eye"></i> View Password</a></li>
+                <li><a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/gitzel.jpeg') }}" width="400" 
+        height="400">
+    </div>
+    <footer>
+        &copy; 2023 The Not Buggy At All Password Manager
+    </footer>
 </body>
 </html>

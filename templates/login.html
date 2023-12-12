@@ -4,20 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <title>User Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <h1>User Login</h1>
-
     <form id="loginForm">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username"><br><br>
         
         <label for="password">Password:</label>
         <input type="password" id="password" name="password"><br><br>
-        
         <button type="submit">Login</button>
     </form>
-
+    <nav>
+        <ul>
+            <li><a href="/"><i class="fas fa-sign-out-alt"></i>Home</a></li>
+        </ul>
+    </nav>
     <script>
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
